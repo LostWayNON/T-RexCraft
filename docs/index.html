@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>T-Rex</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07070a;
+  --card:#0e0e14;
+  --card-2:#14141d;
+  --line:#1f1f2b;
+  --text:#f4f4f6;
+  --muted:#8a8a9b;
+  --red:#e11d2e;
+  --red-hover:#f42b3d;
+  --green:#22c55e;
+}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans Thai",sans-serif;
+  background:radial-gradient(600px 360px at 50% 0%,rgba(225,29,46,.12),transparent 70%),var(--bg);
+  color:var(--text);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  -webkit-font-smoothing:antialiased;
+}
+.card{
+  width:100%;
+  max-width:400px;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:28px 24px;
+  box-shadow:0 24px 60px rgba(0,0,0,.55);
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:20px;
+  font-weight:800;
+  letter-spacing:.3px;
+}
+.brand-dot{
+  width:8px;
+  height:8px;
+  border-radius:99px;
+  background:var(--red);
+  box-shadow:0 0 12px var(--red);
+}
+.title{
+  margin-top:16px;
+  font-size:17px;
+  font-weight:700;
+  color:var(--text);
+}
+.sub{
+  margin-top:4px;
+  font-size:13px;
+  color:var(--muted);
+}
+.tasks{
+  margin-top:20px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.task-btn{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:13px 15px;
+  background:var(--card-2);
+  border:1px solid var(--line);
+  border-radius:11px;
+  color:var(--text);
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  transition:border-color .15s,background .15s,transform .1s;
+}
+.task-btn:hover:not(:disabled){
+  border-color:rgba(225,29,46,.65);
+  background:#191924;
+}
+.task-btn:active:not(:disabled){transform:scale(.99)}
+.task-btn.done{
+  border-color:rgba(34,197,94,.45);
+  background:rgba(34,197,94,.08);
+  cursor:default;
+}
+.task-left{display:flex;align-items:center;gap:10px}
+.icon{width:18px;height:18px;flex-shrink:0}
+.badge{
+  font-size:12px;
+  font-weight:600;
+  color:var(--muted);
+}
+.task-btn.waiting .badge{color:var(--red)}
+.task-btn.done .badge{color:var(--green)}
+.progress-bar{
+  margin-top:18px;
+  height:4px;
+  width:100%;
+  background:#171722;
+  border-radius:99px;
+  overflow:hidden;
+}
+.progress-fill{
+  height:100%;
+  width:0%;
+  background:var(--red);
+  transition:width .25s ease,background .25s ease;
+}
+.progress-fill.complete{background:var(--green)}
+.result{
+  margin-top:18px;
+  display:none;
+  flex-direction:column;
+  gap:10px;
+}
+.result.show{display:flex}
+.code-box{
+  width:100%;
+  background:#09090d;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:12px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:12px;
+  color:#e4e4ec;
+  word-break:break-all;
+  user-select:all;
+}
+.copy-btn{
+  width:100%;
+  padding:13px;
+  border:none;
+  border-radius:11px;
+  background:var(--red);
+  color:#fff;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  transition:background .15s,transform .1s;
+}
+.copy-btn:hover{background:var(--red-hover)}
+.copy-btn:active{transform:scale(.99)}
+.copy-btn.copied{background:var(--green)}
+.error{
+  margin-top:18px;
+  padding:14px;
+  border-radius:11px;
+  background:rgba(225,29,46,.08);
+  border:1px solid rgba(225,29,46,.35);
+  color:#fca5a5;
+  font-size:13px;
+  line-height:1.5;
+}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="brand"><span class="brand-dot"></span><span>T-Rex</span></div>
+  <div id="view-loading" class="sub" style="margin-top:16px">กำลังโหลด...</div>
+  <div id="view-error" class="error hidden"></div>
+  <div id="view-main" class="hidden">
+    <div id="script-name" class="title"></div>
+    <div id="script-sub" class="sub">ทำภารกิจด้านล่างให้ครบเพื่อปลดล็อกสคริปต์</div>
+    <div id="tasks" class="tasks"></div>
+    <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+    <div id="result" class="result">
+      <div id="code-box" class="code-box"></div>
+      <button id="copy-btn" class="copy-btn" type="button">คัดลอกสคริปต์</button>
+    </div>
+  </div>
+</main>
+<script>
+(function(){
+  const qs = new URLSearchParams(window.location.search);
+  const rawId = (qs.get('id') || '').trim().toUpperCase();
+  const rawCreator = (qs.get('c') || '').trim().toLowerCase();
+
+  const elLoading = document.getElementById('view-loading');
+  const elError = document.getElementById('view-error');
+  const elMain = document.getElementById('view-main');
+  const elName = document.getElementById('script-name');
+  const elSub = document.getElementById('script-sub');
+  const elTasks = document.getElementById('tasks');
+  const elFill = document.getElementById('progress-fill');
+  const elResult = document.getElementById('result');
+  const elCode = document.getElementById('code-box');
+  const elCopy = document.getElementById('copy-btn');
+
+  function showError(msg){
+    elLoading.classList.add('hidden');
+    elMain.classList.add('hidden');
+    elError.textContent = msg;
+    elError.classList.remove('hidden');
+  }
+
+  function decodePayload(b64, salt){
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++){
+      const mask = (salt + i * 17 + (i % 7) * 13) & 255;
+      bytes[i] = bin.charCodeAt(i) ^ mask;
+    }
+    return new TextDecoder('utf-8').decode(bytes);
+  }
+
+  const YT_ICON = '<svg class="icon" viewBox="0 0 24 24" fill="#e11d2e"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>';
+  const TT_ICON = '<svg class="icon" viewBox="0 0 24 24" fill="#f4f4f6"><path d="M19.6 6.7a4.8 4.8 0 0 1-3.8-4.7h-3.4v13.2a2.9 2.9 0 1 1-2.9-2.9c.3 0 .6 0 .9.1V8.9a6.3 6.3 0 1 0 5.4 6.3V8.7a8.1 8.1 0 0 0 4.7 1.5V6.8c-.3 0-.6 0-.9-.1z"/></svg>';
+
+  if(!rawId){
+    showError('ไม่พบลิงก์สคริปต์ กรุณาเปิดจากลิงก์ที่ได้รับ');
+    return;
+  }
+
+  fetch('./data.json?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => { if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(data => {
+      const item = data && data.items && data.items[rawId];
+      if(!item){
+        showError('ไม่พบสคริปต์นี้ หรือถูกปิดใช้งานชั่วคราว');
+        return;
+      }
+
+      const creators = (data && data.creators) || {};
+      const creator = (rawCreator && creators[rawCreator]) || (data.defaultCreator && creators[data.defaultCreator]) || null;
+
+      const tasks = [];
+      if(creator && creator.m !== 'off'){
+        if((creator.m === 'youtube' || creator.m === 'both') && creator.yt){
+          tasks.push({ key:'yt', label:'ติดตามช่อง YouTube', url:creator.yt, icon:YT_ICON });
+        }
+        if((creator.m === 'tiktok' || creator.m === 'both') && creator.tt){
+          tasks.push({ key:'tt', label:'ติดตามช่อง TikTok', url:creator.tt, icon:TT_ICON });
+        }
+      }
+
+      const waitSec = Math.max(3, Math.min(60, Number(creator && creator.w) || 10));
+      const completed = new Set();
+
+      elLoading.classList.add('hidden');
+      elName.textContent = item.n;
+      elMain.classList.remove('hidden');
+
+      function reveal(){
+        elFill.style.width = '100%';
+        elFill.classList.add('complete');
+        elSub.textContent = 'ปลดล็อกสำเร็จ คัดลอกไปใช้งานได้เลย';
+        const decoded = decodePayload(item.p, item.s);
+        elCode.textContent = decoded;
+        elResult.classList.add('show');
+      }
+
+      function updateProgress(){
+        if(tasks.length === 0){
+          reveal();
+          return;
+        }
+        const pct = Math.round((completed.size / tasks.length) * 100);
+        elFill.style.width = pct + '%';
+        if(completed.size >= tasks.length) reveal();
+      }
+
+      if(tasks.length === 0){
+        elTasks.classList.add('hidden');
+        reveal();
+      } else {
+        tasks.forEach(task => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'task-btn';
+          btn.innerHTML = '<span class="task-left">' + task.icon + '<span>' + task.label + '</span></span><span class="badge">กดเพื่อทำ</span>';
+          let active = false;
+
+          btn.addEventListener('click', () => {
+            if(completed.has(task.key) || active) return;
+            active = true;
+            window.open(task.url, '_blank', 'noopener,noreferrer');
+            btn.classList.add('waiting');
+            const badge = btn.querySelector('.badge');
+            let left = waitSec;
+            let sawHidden = false;
+
+            const onVis = () => { if(document.hidden) sawHidden = true; };
+            document.addEventListener('visibilitychange', onVis);
+
+            badge.textContent = 'รอ ' + left + ' วิ...';
+            const timer = setInterval(() => {
+              left--;
+              if(left > 0){
+                badge.textContent = 'รอ ' + left + ' วิ...';
+              } else {
+                clearInterval(timer);
+                document.removeEventListener('visibilitychange', onVis);
+                active = false;
+                completed.add(task.key);
+                btn.classList.remove('waiting');
+                btn.classList.add('done');
+                btn.disabled = true;
+                badge.textContent = '✓ ผ่านแล้ว';
+                updateProgress();
+              }
+            }, 1000);
+          });
+
+          elTasks.appendChild(btn);
+        });
+      }
+
+      elCopy.addEventListener('click', async () => {
+        const text = elCode.textContent || '';
+        if(!text) return;
+        try{
+          await navigator.clipboard.writeText(text);
+        }catch(_){
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        elCopy.textContent = '✓ คัดลอกแล้ว';
+        elCopy.classList.add('copied');
+        setTimeout(() => {
+          elCopy.textContent = 'คัดลอกสคริปต์';
+          elCopy.classList.remove('copied');
+        }, 1800);
+      });
+    })
+    .catch(() => showError('โหลดข้อมูลไม่สำเร็จ กรุณาลองรีเฟรชอีกครั้ง'));
+})();
+</script>
+</body>
+</html>
