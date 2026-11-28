@@ -1,7 +1,13 @@
 {
   "v": 1,
-  "defaultCreator": "h9amkq",
+  "defaultCreator": "3ecubt",
   "creators": {
+    "3ecubt": {
+      "yt": "https://www.youtube.com/@TRexHub6767",
+      "tt": "https://www.tiktok.com/@t_rex67676767",
+      "m": "both",
+      "w": 10
+    },
     "h9amkq": {
       "yt": "https://www.youtube.com/@TRexHub6767",
       "tt": "",
@@ -12,14 +18,14 @@
   "items": {
     "BLOX_STRIKE": {
       "n": "Blox Strike",
-      "p": "+dywi35fO2VEL07jw63mm/epj2lwn2wedhrk2gH8l+TGdUSfKEMrFBbpPQjo3KWWfLiAd146QukiBqbrqpB1k4N5UHMUV290JfDLkp3TtpojRykPR2g3wfLcr8nOqNdfXyJydCQQ9oKJwuOSt1VwEExoBHER7thes5H+3Q==",
-      "s": 149,
+      "p": "27qSdVw5GUciDaDBpY/A+amLaUseeU5wVPzGpOPC9cIkWyZ9BiEN9sjL4+rOvot0WpZiUTwEoM8A4ISFiHZXsWVbDhEytQlWy9KtsGO1lGQBIQvhJUbV55CCjauQijF9MQBcFgLyyOCv/IG0VXsSNm4OJq/zyLq8lfPQPw==",
+      "s": 183,
       "u": 1795761758
     },
     "MAHANAKORN_RACING": {
       "n": "Mahanakorn_racing",
-      "p": "RSgE59LLr8nQu9J/VzlyDxsF+92M69jiym5QNnVQe3BS6dgLtN+/gHpFkWRcKBnqyAT8w6qWLn2OkjJ3NgThDxft/J+gI5vAWUw/JvEnAvaP072T0/SrVWYwA10iBKPro57OiJBkWm4SYwgfMtvzmcv5iqFQbAReaWIG/cfmrozryA==",
-      "s": 41,
+      "p": "IQTow7aXc62MZzZbOxVeYz/hx6Go16TGLkI8Elk0X6yOzbzXkLuTbF4hdUAgFP3OpODYr4ZyCiFqTm4TEujNK/vBmLtcH6c8fSgTytUL7tLrj2F3j9BPeQoU5zEG4J+Xh3qqrHxIPkrOByzD7v+Xte+VpkV0EDh6FV7i2avKguDPLA==",
+      "s": 77,
       "u": 1795840735
     }
   }
